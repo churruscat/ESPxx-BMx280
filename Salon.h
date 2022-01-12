@@ -4,7 +4,7 @@
 #define CON_SUELO 
 #define PRESSURE_CORRECTION (1.080)  // HPAo/HPHh 647m
 #define IS_BME280
-
+#undef ESP32 
 
 #define DEVICE_ID "Salon"
 #define TOKEN "Token-del-Salon"

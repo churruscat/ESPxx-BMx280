@@ -9,8 +9,11 @@
           added #define BME280 to diferentiate BMP280 and BME280 in <device.h>
     v3.0 2021 added #define ESP32 to  Integrate ESP12 and ESP32 versions       
 */
-#undef  ESP32
-//#define ESP32  // to use an ESP32 or (if undefined) an ESP12
+#include "terrazaDenia.h"   // I moved these (device) includes to "personal.h"
+//include "jardn.h"   // I moved these (device) includes to "personal.h"
+// type of ESP is defined in location (Terraza.h, jardin.h ...etc.)
+// type of BME is defined in location (Terraza.h, jardin.h ...etc.)
+
 
 #define PRINT_SI
 #ifdef  PRINT_SI
@@ -28,7 +31,7 @@
 /* select sensor and its values */ 
 #include <ArduinoJson.h>
 #include "mqtt_mosquitto.h"  /* mqtt values */
-//include "jardn.h"   // I moved these (device) includes to "personal.h"
+
 #ifdef ESP32
   #include <ESPmDNS.h>
   #include <WiFiUdp.h>
@@ -65,9 +68,9 @@
 #
 #define L_POR_BALANCEO 0.2794 // liter/m2 for evey rain gauge interrupt
 #include <Wire.h>             //libraries for sensors and so on
-#include <Adafruit_Sensor.h>
 #ifdef IS_BME280
    #include <Adafruit_BME280.h>
+#include <Adafruit_Sensor.h>
    Adafruit_BME280 sensorBMX280;     // this represents the sensor BME
 #else
    #include <Adafruit_BMP280.h>
@@ -96,7 +99,7 @@ JsonObject valores=docJson.createNestedObject();  //Read values
 JsonObject claves=docJson.createNestedObject();   // key values (location and deviceId)
 #ifdef CON_LLUVIA
     // Interrupt counter for rain gauge
-    void ICACHE_RAM_ATTR balanceoPluviometro() {
+    void IRAM_ATTR balanceoPluviometro() {
      if ((millis()-lastTrigger) > 1000){
          lastTrigger=millis();
            contadorPluvi++;
@@ -114,12 +117,7 @@ void setup() {
 boolean status;
     
   Serial.begin(115200);
-  DPRINTLN("starting ... "); 
-  Wire.begin(SDA,SCL);
-  status = sensorBMX280.begin(ACTUAL_BME280_ADDRESS);  
-  if (!status) {
-     DPRINTLN("Can't connect to BME Sensor!  ");    
-  }
+
   /* start PINs first soil Humidity, then Pluviometer */
   #ifdef CON_LLUVIA
         pinMode(interruptPin, INPUT_PULLUP);
@@ -135,12 +133,16 @@ boolean status;
     digitalWrite(CONTROL_HUMEDAD, LOW);
   #endif
   wifiConnect();
+    DPRINTLN("starting ... "); 
+  Wire.begin(SDA,SCL);
+  status = sensorBMX280.begin(ACTUAL_BME280_ADDRESS);  
+  DPRINTLN("starting ... "); 
+  if (!status) {
+     DPRINTLN("Can't connect to BME Sensor!  ");    
+  } else {
+    DPRINTLN("Connected to BME Sensor!  ");  
+  }
   mqttConnect();
-  #ifdef IS_BME280
-      sensorBMX280.setSampling(Adafruit_BME280::MODE_NORMAL);
-  #else
-     sensorBMX280.setSampling(Adafruit_BMP280::MODE_NORMAL);
-  #endif
   #ifdef CON_UV
     pinMode(PIN_UV, INPUT);
     //analogReadResolution(12);
@@ -234,14 +236,15 @@ void loop() {
 * first, it calls to tomaDatos() to read data 
 *********************************************/
 boolean publicaDatos() {
-    int k=0;
+    int k=0;    boolean pubresult=true;
+
     char signo;
-    boolean pubresult=true;
          
    tomaDatos();
    serializeJson(docJson,datosJson);
     // and publish them.
-    DPRINTLN("preparing to send");
+    //DPRINTLN("preparing to send");
+    DPRINTLN(datosJson);
     pubresult = enviaDatos(publishTopic,datosJson); 
     if (pubresult){
         lluvia=0.0;      // data sent successfully, set rain to zero 

@@ -3,6 +3,7 @@
 #define DEVICE_ID "Jardin"
 #define TOKEN "Token-del-Jardin"
 #define IS_BME280
+#undef ESP32 
 #undef IP_FIJA
 #ifdef IP_FIJA
   byte ip[] = {192,168,1,30};   

@@ -7,6 +7,7 @@
 #define DEVICE_ID "Prueba"
 #define TOKEN "Token-de-Barco"
 #define IS_BME280
+#undef ESP32 
 #undef CON_SUELO   // con sensor de humedad del suelo
 #undef CON_UV
 #define CON_LLUVIA

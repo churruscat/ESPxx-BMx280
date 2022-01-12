@@ -5,6 +5,7 @@
 
 #undef CON_SUELO
 #define IS_BME280
+#undef ESP32 
 #define PRESSURE_CORRECTION (1.0027)  // HPAo/HPHh 18m +corrección sensor
 #undef IP_FIJA
 #ifdef IP_FIJA
